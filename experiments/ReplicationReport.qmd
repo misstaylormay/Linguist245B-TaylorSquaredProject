@@ -1,0 +1,121 @@
+---
+title: "Replication of Study X by Sample & Sample (20xx, Psychological Science)"
+author: "Replication Author[s] (contact information)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    toc: true
+    toc_depth: 3
+---
+
+<!-- Replication reports should all use this template to standardize reporting across projects.  These reports will be public supplementary materials that accompany the summary report(s) of the aggregate results. -->
+
+## Introduction
+Campbell-Kibler(2012) researches how sociolinguistic variations in words can result in implicit social meaning or biases.
+They investigate this by using the Implicit Association Test (IAT). Overall, the study focuses on how
+linguistic features, such as phonetic variations in English, are associated with social groups resulting in implicit
+stereotypes for listeners. This can occur when they are consciously aware of social associations or not. 
+For this replication we will be focusing on experiment 1 which examines the extent to which listeners
+associate variants of the linguistic variable (ing) either in words such as "being" or "bein", with social contexts
+such as level of education and region. 
+
+In regard to the research question, it focuses on whether phonetic variation in speech triggers
+implicit associations to different social traits. Essentially, does the variation of (ing) influence 
+a listener's implicit judgement on a speaker's education, region, and competence? This research 
+question is investigated through the use of IAT which is a tool to measure automatic associations between concepts.
+
+## Methods
+The IAT consists of a series of blocks in which participants are asked to sort visually presented words into categories using two response keys. 
+Each word belongs to one of four categories: two target categories and two attribute categories. 
+For each block, the words from two categories (one target, one attribute) are assigned to each response key. 
+Reaction times are measured to determine how easily participants can sort items under a given key assignment.
+In this experiment, the target categories were (ING) and (IN) pronunciations and the attribute categories were either educated/uneducated or nice/mean. 
+The linguistic stimuli were a set of ten word pairs differing only in the realization of the (ING) variable.
+
+The experiment was composed of five blocks. The first block introduced participants to the attribute categories, and they sorted 20 attribute words into the appropriate category. 
+The second block introduced the (ING) variable categories, and participants sorted 20 stimuli by whether they contained [ŋ] or [n]. 
+In the third and fifth blocks (the critical blocks), participants sorted both attribute and linguistic stimuli into their appropriate paired categories, once with one pairing and once with the reverse pairing. 
+The fourth block repeated the second block with reversed key assignments, as a form of "reset" so that participants didn't develop left/right key pattern biases that would change the data.
+The order of block presentation was counterbalanced, and stimuli were randomized within blocks. 
+The software recorded response times and accuracy, and data were cleaned according to standard IAT procedures (Greenwald, Nosek, & Banaji, 2003).
+
+### Power Analysis
+In order to ensure statistical power for detecting differences between groups, by using a two-sample
+t-test, we conducted power analyses using a significance level of .05 and a desired power of .80. Based on 
+different anticipated effect sizes (Cohen's d) the required sample sizes per group to achieve
+the desired group are as follows: 
+For the states block 110 people are required.
+For the professions block 82 people are required. 
+For the singers/anchors block 273 people are required. 
+
+### Planned Sample
+
+Planned sample size and/or termination rule, sampling frame, known demographics if any, preselection rules if any.
+
+### Materials
+
+All materials - can quote directly from original article - just put the text in quotations and note that this was followed precisely.  Or, quote directly and just point out exceptions to what was described in the original article.
+
+### Procedure	
+
+Can quote directly from original article - just put the text in quotations and note that this was followed precisely.  Or, quote directly and just point out exceptions to what was described in the original article.
+
+### Analysis Plan
+
+Can also quote directly, though it is less often spelled out effectively for an analysis strategy section.  The key is to report an analysis strategy that is as close to the original - data cleaning rules, data exclusion rules, covariates, etc. - as possible.  
+
+**Clarify key analysis of interest here**  You can also pre-specify additional analyses you plan to do.
+
+### Differences from Original Study
+
+Explicitly describe known differences in sample, setting, procedure, and analysis plan from original study.  The goal, of course, is to minimize those differences, but differences will inevitably occur.  Also, note whether such differences are anticipated to make a difference based on claims in the original article or subsequent published research on the conditions for obtaining the effect.
+
+### Methods Addendum (Post Data Collection)
+
+You can comment this section out prior to final report with data collection.
+
+#### Actual Sample
+  Sample size, demographics, data exclusions based on rules spelled out in analysis plan
+
+#### Differences from pre-data collection methods plan
+  Any differences from what was described as the original plan, or “none”.
+
+
+## Results
+
+
+### Data preparation
+
+Data preparation following the analysis plan.
+	
+```{r include=F}
+### Data Preparation
+
+#### Load Relevant Libraries and Functions
+
+#### Import data
+
+#### Data exclusion / filtering
+
+#### Prepare data for analysis - create columns etc.
+```
+
+### Confirmatory analysis
+
+The analyses as specified in the analysis plan.  
+
+*Side-by-side graph with original graph is ideal here*
+
+### Exploratory analyses
+
+Any follow-up analyses desired (not required).  
+
+## Discussion
+
+### Summary of Replication Attempt
+
+Open the discussion section with a paragraph summarizing the primary result from the confirmatory analysis and the assessment of whether it replicated, partially replicated, or failed to replicate the original result.  
+
+### Commentary
+
+Add open-ended commentary (if any) reflecting (a) insights from follow-up exploratory analysis, (b) assessment of the meaning of the replication (or not) - e.g., for a failure to replicate, are the differences between original and present study ones that definitely, plausibly, or are unlikely to have been moderators of the result, and (c) discussion of any objections or challenges raised by the current and original authors about the replication attempt.  None of these need to be long.
