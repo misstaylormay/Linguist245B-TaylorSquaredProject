@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bott & Noveck (2004) Replication</title>
+    <script src="https://unpkg.com/jspsych@7.3.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@1.1.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+    <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        .jspsych-content {
+            max-width: 800px;
+            font-size: 24px;
+            text-align: left;
+        }
+        .sentence {
+            font-size: 28px;
+            margin: 20px;
+            text-align: center;
+        }
+        .instruction-text {
+            font-size: 20px;
+            line-height: 1.5;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 600px;
+            padding: 20px;
+        }
+        .instruction-text ul {
+            padding-left: 30px;
+        }
+        .jspsych-instructions-nav {
+            text-align: center; 
+        }
+        .feedback {
+            font-size: 32px;
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .category-label {
+            position: absolute;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .left-label {
+            top: 10px;
+            left: 10px;
+        }
+        .right-label {
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body></body>
+<script>
+    // Initialize jsPsych
+    const jsPsych = initJsPsych({
+        on_finish: function() {
+            // Calculate and display IAT D-scores
+            const d_scores = calculateIATDScores();
+            jsPsych.data.addProperties({ d_scores: d_scores });
+            jsPsych.data.displayData();
+        }
+    });
+
+    // DataPipe setup
+    const subject_id = jsPsych.randomization.randomID(10);
+    const filename = `${subject_id}.csv`;
+
+    // Experiment configuration
+    const config = {
+        isDemo: true,
+        trialsPerBlock: isDemo => isDemo ? { single: 5, combined: 10 } : { single: 20, combined: 40 }
+    };
+
+    // Stimuli from Campbell-Kibler (2012)
+    const ing_words = {
+        variable: ['being', 'having', 'doing', 'saying', 'making', 'bein', 'havin', 'doin', 'sayin', 'makin'],
+        states: ['Massachusetts', 'Connecticut', 'Rhode Island', 'Maine', 'Vermont', 'Mississippi', 'Georgia', 'Alabama', 'Virginia', 'Tennessee'],
+        professions: ['architect', 'banker', 'doctor', 'lawyer', 'professor', 'carpenter', 'plumber', 'trucker', 'janitor', 'mechanic'],
+        singers_anchors: ['Billy Ray Cyrus', 'Dolly Parton', 'Toby Keith', 'Garth Brooks', 'Johnny Cash', 'Walter Cronkite', 'Diane Sawyer', 'Brian Williams', 'Peter Jennings', 'Tom Brokaw']
+    };
+
+    // Instructions
+    const instructions = {
+        type: jsPsychInstructions,
+        pages: [
+            `<div class="instruction-text">
+                <h1>Welcome to the ${config.isDemo ? 'Demo Version of the ' : ''}Experiment!</h1>
+                ${config.isDemo ? '<p><strong>Note: This is a demo version with reduced trials.</strong></p>' : ''}
+                <p>In this task, you will categorize words and social categories.</p>
+                <p>You will sort words ending in -IN or -ING and various social categories (states, professions, or people).</p>
+            </div>`,
+            `<div class="instruction-text">
+                <p>For each item:</p>
+                <ul>
+                    <li>Press 'Q' for items in the left category</li>
+                    <li>Press 'P' for items in the right category</li>
+                </ul>
+                <p>Category labels will appear in the upper corners of the screen.</p>
+                <p>Try to respond as quickly and accurately as possible.</p>
+            </div>`,
+            `<div class="instruction-text">
+                <p>You will receive feedback if you make an error.</p>
+                <p>You can take short breaks between blocks.</p>
+                <p>Let's begin!</p>
+                <p>Press the right arrow key to start.</p>
+            </div>`
+        ],
+        show_clickable_nav: true
+    };
+
+    // Function to generate IAT blocks for a given task
+    function generateIATBlocks(task, valence_category, congruent_first) {
+        const trials = [];
+        const variable_stimuli = ing_words.variable;
+        const valence_stimuli = ing_words[valence_category];
+        const var_left = congruent_first ? ['bein', 'havin', 'doin', 'sayin', 'makin'] : ['being', 'having', 'doing', 'saying', 'making'];
+        const var_right = congruent_first ? ['being', 'having', 'doing', 'saying', 'making'] : ['bein', 'havin', 'doin', 'sayin', 'makin'];
+        const val_left = valence_category === 'states' ? (congruent_first ? ['Mississippi', 'Georgia', 'Alabama', 'Virginia', 'Tennessee'] : ['Massachusetts', 'Connecticut', 'Rhode Island', 'Maine', 'Vermont']) :
+                        valence_category === 'professions' ? (congruent_first ? ['carpenter', 'plumber', 'trucker', 'janitor', 'mechanic'] : ['architect', 'banker', 'doctor', 'lawyer', 'professor']) :
+                        (congruent_first ? ['Billy Ray Cyrus', 'Dolly Parton', 'Toby Keith', 'Garth Brooks', 'Johnny Cash'] : ['Walter Cronkite', 'Diane Sawyer', 'Brian Williams', 'Peter Jennings', 'Tom Brokaw']);
+        const val_right = valence_category === 'states' ? (congruent_first ? ['Massachusetts', 'Connecticut', 'Rhode Island', 'Maine', 'Vermont'] : ['Mississippi', 'Georgia', 'Alabama', 'Virginia', 'Tennessee']) :
+                         valence_category === 'professions' ? (congruent_first ? ['architect', 'banker', 'doctor', 'lawyer', 'professor'] : ['carpenter', 'plumber', 'trucker', 'janitor', 'mechanic']) :
+                         (congruent_first ? ['Walter Cronkite', 'Diane Sawyer', 'Brian Williams', 'Peter Jennings', 'Tom Brokaw'] : ['Billy Ray Cyrus', 'Dolly Parton', 'Toby Keith', 'Garth Brooks', 'Johnny Cash']);
+
+        // Block 1: Variable only (-in vs. -ing)
+        trials.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ['q', 'p'],
+            data: {
+                task: 'variable',
+                block: 1,
+                stimulus: jsPsych.timelineVariable('stimulus'),
+                correctResponse: jsPsych.timelineVariable('correctResponse'),
+                condition: task
+            },
+            stimulus_duration: null,
+            trial_duration: null,
+            response_ends_trial: true,
+            on_finish: function(data) {
+                data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+                data.rt = data.rt || -1;
+            },
+            post_trial_gap: 200,
+            prompt: `<div class="category-label left-label">-in</div><div class="category-label right-label">-ing</div>`
+        }, {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? '' : '<div class="feedback incorrect">Incorrect</div>';
+            },
+            choices: 'NO_KEYS',
+            trial_duration: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? 0 : 500;
+            },
+            data: { task: 'feedback', block: 1, condition: task }
+        });
+
+        // Block 2: Valence only (e.g., Southern vs. Northern states)
+        trials.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ['q', 'p'],
+            data: {
+                task: 'valence',
+                block: 2,
+                stimulus: jsPsych.timelineVariable('stimulus'),
+                correctResponse: jsPsych.timelineVariable('correctResponse'),
+                condition: task
+            },
+            stimulus_duration: null,
+            trial_duration: null,
+            response_ends_trial: true,
+            on_finish: function(data) {
+                data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+                data.rt = data.rt || -1;
+            },
+            post_trial_gap: 200,
+            prompt: `<div class="category-label left-label">${valence_category === 'states' ? 'Southern' : valence_category === 'professions' ? 'Blue-collar' : 'Country Singers'}</div><div class="category-label right-label">${valence_category === 'states' ? 'Northern' : valence_category === 'professions' ? 'White-collar' : 'News Anchors'}</div>`
+        }, {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? '' : '<div class="feedback incorrect">Incorrect</div>';
+            },
+            choices: 'NO_KEYS',
+            trial_duration: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? 0 : 500;
+            },
+            data: { task: 'feedback', block: 2, condition: task }
+        });
+
+        // Blocks 3 and 3b: Combined congruent/incongruent
+        trials.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ['q', 'p'],
+            data: {
+                task: 'combined',
+                block: 3,
+                stimulus: jsPsych.timelineVariable('stimulus'),
+                correctResponse: jsPsych.timelineVariable('correctResponse'),
+                condition: task,
+                alignment: congruent_first ? 'congruent' : 'incongruent'
+            },
+            stimulus_duration: null,
+            trial_duration: null,
+            response_ends_trial: true,
+            on_finish: function(data) {
+                data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+                data.rt = data.rt || -1;
+            },
+            post_trial_gap: 200,
+            prompt: `<div class="category-label left-label">-in or ${valence_category === 'states' ? 'Southern' : valence_category === 'professions' ? 'Blue-collar' : 'Country Singers'}</div><div class="category-label right-label">-ing or ${valence_category === 'states' ? 'Northern' : valence_category === 'professions' ? 'White-collar' : 'News Anchors'}</div>`
+        }, {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? '' : '<div class="feedback incorrect">Incorrect</div>';
+            },
+            choices: 'NO_KEYS',
+            trial_duration: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? 0 : 500;
+            },
+            data: { task: 'feedback', block: 3, condition: task }
+        });
+
+        // Block 4: Variable only (reversed)
+        trials.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ['q', 'p'],
+            data: {
+                task: 'variable',
+                block: 4,
+                stimulus: jsPsych.timelineVariable('stimulus'),
+                correctResponse: jsPsych.timelineVariable('correctResponse'),
+                condition: task
+            },
+            stimulus_duration: null,
+            trial_duration: null,
+            response_ends_trial: true,
+            on_finish: function(data) {
+                data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+                data.rt = data.rt || -1;
+            },
+            post_trial_gap: 200,
+            prompt: `<div class="category-label left-label">-ing</div><div class="category-label right-label">-in</div>`
+        }, {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? '' : '<div class="feedback incorrect">Incorrect</div>';
+            },
+            choices: 'NO_KEYS',
+            trial_duration: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? 0 : 500;
+            },
+            data: { task: 'feedback', block: 4, condition: task }
+        });
+
+        // Blocks 5 and 5b: Combined incongruent/congruent
+        trials.push({
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            choices: ['q', 'p'],
+            data: {
+                task: 'combined',
+                block: 5,
+                stimulus: jsPsych.timelineVariable('stimulus'),
+                correctResponse: jsPsych.timelineVariable('correctResponse'),
+                condition: task,
+                alignment: congruent_first ? 'incongruent' : 'congruent'
+            },
+            stimulus_duration: null,
+            trial_duration: null,
+            response_ends_trial: true,
+            on_finish: function(data) {
+                data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+                data.rt = data.rt || -1;
+            },
+            post_trial_gap: 200,
+            prompt: `<div class="category-label left-label">-ing or ${valence_category === 'states' ? 'Southern' : valence_category === 'professions' ? 'Blue-collar' : 'Country Singers'}</div><div class="category-label right-label">-in or ${valence_category === 'states' ? 'Northern' : valence_category === 'professions' ? 'White-collar' : 'News Anchors'}</div>`
+        }, {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? '' : '<div class="feedback incorrect">Incorrect</div>';
+            },
+            choices: 'NO_KEYS',
+            trial_duration: function() {
+                const lastTrial = jsPsych.data.get().last(1).values()[0];
+                return lastTrial.correct ? 0 : 500;
+            },
+            data: { task: 'feedback', block: 5, condition: task }
+        });
+
+        // Break between blocks
+        const break_trial = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `<div class="instruction-text"><p>Take a short break. Press any key to continue.</p></div>`,
+            choices: 'ALL_KEYS',
+            data: { task: 'break', condition: task }
+        };
+
+        // Timeline variables
+        const block1_stimuli = variable_stimuli.map(s => ({
+            stimulus: `<div class="sentence">${s}</div>`,
+            correctResponse: var_left.includes(s) ? 'q' : 'p'
+        }));
+        const block2_stimuli = valence_stimuli.map(s => ({
+            stimulus: `<div class="sentence">${s}</div>`,
+            correctResponse: val_left.includes(s) ? 'q' : 'p'
+        }));
+        const combined_stimuli = [...variable_stimuli, ...valence_stimuli].map(s => ({
+            stimulus: `<div class="sentence">${s}</div>`,
+            correctResponse: var_left.includes(s) || val_left.includes(s) ? 'q' : 'p'
+        }));
+        const block4_stimuli = variable_stimuli.map(s => ({
+            stimulus: `<div class="sentence">${s}</div>`,
+            correctResponse: var_right.includes(s) ? 'q' : 'p'
+        }));
+        const combined_stimuli_reversed = [...variable_stimuli, ...valence_stimuli].map(s => ({
+            stimulus: `<div class="sentence">${s}</div>`,
+            correctResponse: var_right.includes(s) || val_left.includes(s) ? 'q' : 'p'
+        }));
+
+        // Create timeline
+        return [
+            {
+                timeline: [trials[0], trials[1]],
+                timeline_variables: jsPsych.randomization.repeat(block1_stimuli, config.trialsPerBlock(config.isDemo).single / block1_stimuli.length)
+            },
+            break_trial,
+            {
+                timeline: [trials[2], trials[3]],
+                timeline_variables: jsPsych.randomization.repeat(block2_stimuli, config.trialsPerBlock(config.isDemo).single / block2_stimuli.length)
+            },
+            break_trial,
+            {
+                timeline: [trials[4], trials[5]],
+                timeline_variables: jsPsych.randomization.repeat(combined_stimuli, config.trialsPerBlock(config.isDemo).single / combined_stimuli.length)
+            },
+            {
+                timeline: [trials[4], trials[5]],
+                timeline_variables: jsPsych.randomization.repeat(combined_stimuli, config.trialsPerBlock(config.isDemo).combined / combined_stimuli.length)
+            },
+            break_trial,
+            {
+                timeline: [trials[6], trials[7]],
+                timeline_variables: jsPsych.randomization.repeat(block4_stimuli, config.trialsPerBlock(config.isDemo).combined / block4_stimuli.length)
+            },
+            break_trial,
+            {
+                timeline: [trials[8], trials[9]],
+                timeline_variables: jsPsych.randomization.repeat(combined_stimuli_reversed, config.trialsPerBlock(config.isDemo).single / combined_stimuli_reversed.length)
+            },
+            {
+                timeline: [trials[8], trials[9]],
+                timeline_variables: jsPsych.randomization.repeat(combined_stimuli_reversed, config.trialsPerBlock(config.isDemo).combined / combined_stimuli_reversed.length)
+            },
+            break_trial
+        ];
+    }
+
+    // Calculate IAT D-scores
+    function calculateIATDScores() {
+        const tasks = ['states', 'professions', 'singers_anchors'];
+        const d_scores = {};
+        
+        tasks.forEach(task => {
+            // Filter data for combined blocks
+            const block3_data = jsPsych.data.get().filter({ task: 'combined', block: 3, condition: task }).values();
+            const block3b_data = jsPsych.data.get().filter({ task: 'combined', block: 3, condition: task }).values();
+            const block5_data = jsPsych.data.get().filter({ task: 'combined', block: 5, condition: task }).values();
+            const block5b_data = jsPsych.data.get().filter({ task: 'combined', block: 5, condition: task }).values();
+            
+            // Remove trials with RT > 10,000 ms
+            const filterRT = data => data.filter(d => d.rt <= 10000);
+            let block3 = filterRT(block3_data);
+            let block3b = filterRT(block3b_data);
+            let block5 = filterRT(block5_data);
+            let block5b = filterRT(block5b_data);
+            
+            // Check for excessive fast responses
+            const all_trials = [...block3, ...block3b, ...block5, ...block5b];
+            const fast_trials = all_trials.filter(d => d.rt < 300).length;
+            if (fast_trials / all_trials.length > 0.1) {
+                d_scores[task] = null;
+                return;
+            }
+            
+            // Apply penalty for incorrect responses
+            const applyPenalty = data => {
+                const mean_rt = _.meanBy(data, 'rt');
+                return data.map(d => ({
+                    ...d,
+                    rt: d.correct ? d.rt : mean_rt + 600
+                }));
+            };
+            block3 = applyPenalty(block3);
+            block3b = applyPenalty(block3b);
+            block5 = applyPenalty(block5);
+            block5b = applyPenalty(block5b);
+            
+            // Calculate pooled SD
+            const pooled_sd_3_5 = Math.sqrt(_.mean([...block3, ...block5].map(d => (d.rt - _.meanBy([...block3, ...block5], 'rt')) ** 2)));
+            const pooled_sd_3b_5b = Math.sqrt(_.mean([...block3b, ...block5b].map(d => (d.rt - _.meanBy([...block3b, ...block5b], 'rt')) ** 2)));
+            
+            // Calculate mean differences
+            const mean_diff_3_5 = _.meanBy(block5, 'rt') - _.meanBy(block3, 'rt');
+            const mean_diff_3b_5b = _.meanBy(block5b, 'rt') - _.meanBy(block3b, 'rt');
+            
+            // Calculate D-score
+            d_scores[task] = (mean_diff_3_5 / pooled_sd_3_5 + mean_diff_3b_5b / pooled_sd_3b_5b) / 2;
+        });
+        
+        return d_scores;
+    }
+
+    // Counterbalance congruent/incongruent order
+    const congruent_first = jsPsych.randomization.shuffle([true, false])[0];
+    
+    // Generate timeline for all tasks
+    const timeline = [
+        instructions,
+        ...generateIATBlocks('states', 'states', congruent_first),
+        ...generateIATBlocks('professions', 'professions', congruent_first),
+        ...generateIATBlocks('singers_anchors', 'singers_anchors', congruent_first),
+        {
+            type: jsPsychPipe,
+            action: "save",
+            experiment_id: "YSpycOqy1gs2",
+            filename: filename,
+            data_string: () => jsPsych.data.get().csv()
+        }
+    ];
+
+    // Run experiment
+    jsPsych.run(timeline);
+</script>
+</html>
