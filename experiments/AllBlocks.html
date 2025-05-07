@@ -441,13 +441,13 @@
 
     // Counterbalance congruent/incongruent order
     const congruent_first = jsPsych.randomization.shuffle([true, false])[0];
+
+    const givenTask = jsPsych.randomization.sampleWithoutReplacement(['states', 'professions', 'singers_anchors'], 1)[0];
     
     // Generate timeline for all tasks
     const timeline = [
         instructions,
-        ...generateIATBlocks('states', 'states', congruent_first),
-        ...generateIATBlocks('professions', 'professions', congruent_first),
-        ...generateIATBlocks('singers_anchors', 'singers_anchors', congruent_first),
+        ...generateIATBlocks(givenTask, givenTask, congruent_first),
         {
             type: jsPsychPipe,
             action: "save",
