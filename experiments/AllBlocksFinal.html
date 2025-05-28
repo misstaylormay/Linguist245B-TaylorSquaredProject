@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bott & Noveck (2004) Replication</title>
+    <script src="https://unpkg.com/jspsych@7.3.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.3"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-instructions@1.1.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-preload@1.1.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+    <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        .jspsych-content {
+            max-width: 800px;
+            font-size: 24px;
+            text-align: left;
+        }
+        .sentence {
+            font-size: 28px;
+            margin: 20px;
+            text-align: center;
+        }
+        .instruction-text {
+            font-size: 20px;
+            line-height: 1.5;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 600px;
+            padding: 20px;
+        }
+        .instruction-text ul {
+            padding-left: 30px;
+        }
+        .jspsych-instructions-nav {
+            text-align: center; 
+        }
+        .feedback {
+            font-size: 32px;
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .category-label {
+            position: absolute;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .left-label {
+            top: 10px;
+            left: 10px;
+        }
+        .right-label {
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body></body>
+<script>
+    // Configuration and Constants
+    const CONFIG = {
+        trialsPerBlock: {
+            single: 20,
+            combined: 40
+        },
+        feedbackDuration: 500,
+        postTrialGap: 200,
+        fontSize: {
+            content: '24px',
+            sentence: '28px',
+            instruction: '20px',
+            feedback: '32px'
+        }
+    };
+
+    // Stimuli Configuration
+    const STIMULI = {
+        variable: ['being', 'having', 'doing', 'saying', 'making', 'bein', 'havin', 'doin', 'sayin', 'makin'],
+        states: {
+            southern: ['Mississippi', 'Georgia', 'Alabama', 'Virginia', 'Tennessee'],
+            northern: ['Massachusetts', 'Connecticut', 'Rhode Island', 'Maine', 'Vermont']
+        },
+        professions: {
+            blueCollar: ['carpenter', 'plumber', 'trucker', 'janitor', 'mechanic'],
+            whiteCollar: ['architect', 'banker', 'doctor', 'lawyer', 'professor']
+        },
+        singers_anchors: {
+            country: ['Billy Ray Cyrus', 'Dolly Parton', 'Toby Keith', 'Garth Brooks', 'Johnny Cash'],
+            news: ['Walter Cronkite', 'Diane Sawyer', 'Brian Williams', 'Peter Jennings', 'Tom Brokaw']
+        }
+    };
+
+    // Helper Functions
+    const createStimulusHTML = (text) => `<div class="sentence">${text}</div>`;
+
+    const getCorrectResponse = (stimulus, category, alignment = 'congruent') => {
+        if (STIMULI.variable.includes(stimulus)) {
+            return stimulus.endsWith('in') ? 'q' : 'p';
+        }
+
+        const isSouthern = STIMULI.states.southern.includes(stimulus);
+        const isBlueCollar = STIMULI.professions.blueCollar.includes(stimulus);
+        const isCountry = STIMULI.singers_anchors.country.includes(stimulus);
+
+        const shouldBeQ = isSouthern || isBlueCollar || isCountry;
+        return alignment === 'congruent' ? (shouldBeQ ? 'q' : 'p') : (shouldBeQ ? 'p' : 'q');
+    };
+
+    const createCategoryLabels = (category, alignment = 'congruent') => {
+        const leftVar = alignment === 'congruent' ? '-in' : '-ing';
+        const rightVar = alignment === 'congruent' ? '-ing' : '-in';
+        
+        let leftCategory, rightCategory;
+        switch(category) {
+            case 'states':
+                leftCategory = 'Southern';
+                rightCategory = 'Northern';
+                break;
+            case 'professions':
+                leftCategory = 'Blue-collar';
+                rightCategory = 'White-collar';
+                break;
+            case 'singers_anchors':
+                leftCategory = 'Country Singers';
+                rightCategory = 'News Anchors';
+                break;
+        }
+
+        return {
+            left: `${leftVar} or ${leftCategory}`,
+            right: `${rightVar} or ${rightCategory}`
+        };
+    };
+
+    // Initialize jsPsych
+    const jsPsych = initJsPsych({
+        on_finish: function() {
+            // Calculate and display IAT D-scores
+            // const d_scores = calculateIATDScores();
+            // jsPsych.data.addProperties({ d_scores: d_scores });
+            jsPsych.data.displayData();
+        }
+    });
+
+    // DataPipe setup
+    const subject_id = jsPsych.randomization.randomID(10);
+    const filename = `${subject_id}.csv`;
+
+    // Randomize experiment parameters
+    const congruent_first = jsPsych.randomization.shuffle([true, false])[0];
+    const givenTask = jsPsych.randomization.sampleWithoutReplacement(['states', 'professions', 'singers_anchors'], 1)[0];
+
+    console.log('running with congruent_first = ', congruent_first, 'and givenTask = ', givenTask);
+
+    // Instructions
+    const instructions = {
+        type: jsPsychInstructions,
+        pages: [
+            `<div class="instruction-text">
+                <h1>Welcome to the Experiment!</h1>
+                <p>In this task, you will categorize words and social categories.</p>
+                <p>You will sort words ending in -IN or -ING and various social categories (states, professions, or people).</p>
+            </div>`,
+            `<div class="instruction-text">
+                <p>For each item:</p>
+                <ul>
+                    <li>Press 'Q' for items in the left category</li>
+                    <li>Press 'P' for items in the right category</li>
+                </ul>
+                <p>Category labels will appear in the upper corners of the screen.</p>
+                <p>Try to respond as quickly and accurately as possible.</p>
+            </div>`,
+            `<div class="instruction-text">
+                <p>You will receive feedback if you make an error.</p>
+                <p>You can take short breaks between blocks.</p>
+                <p>You will now be directed to a consent form.</p>
+                <p>Please read through and select continue if you agree</p>
+            </div>`,
+            `<div class="instruction-text" style="font-size: 0.9em;">
+                <h2>Research Study Information</h2>
+                <p><strong>Protocol Director:</strong> Robert Hawkins</p>
+                <p><strong>Protocol Title:</strong> Communication and social cognition in natural audiovisual contexts</p>
+                <p><strong>IRB#:</strong> 77226</p>
+                <p><strong>Description:</strong> You are invited to participate in a research study about language and communication. The purpose of the research is to understand how you interact and communicate with other people in naturalistic settings as a fluent English speaker. This research will be conducted through the Prolific platform, including participants from the US, UK, and Canada. If you decide to participate in this research, you will play a communication game in a group with one or more partners.</p>
+                <p><strong>Time Involvement:</strong> The task will last the amount of time advertised on Prolific. You are free to withdraw from the study at any time.</p>
+                <p><strong>Risks and Benefits:</strong> You may become frustrated if your partner gets distracted, or experience discomfort if other participants in your group send text that is inappropriate for the task. We ask you to please be respectful of other participants you might be interacting with to mitigate these risks. You may also experience discomfort when being asked to discuss or challenge emotionally salient political beliefs. Study data will be stored securely, in compliance with Stanford University standards, minimizing the risk of confidentiality breach. This study advances our scientific understanding of how people communicate and collaborate in naturalistic settings. This study may lead to further insights about what can go wrong in teamwork, suggest potential interventions to overcome these barriers, and help to develop assistive technologies that collaborate with human partners. We cannot and do not guarantee or promise that you will receive any benefits from this study.</p>
+                <p><strong>Payments:</strong> You will receive payment in the amount advertised on Prolific. If you do not complete this study, you will receive prorated payment based on the time that you have spent. Additionally, you may be eligible for bonus payments as described in the instructions.</p>
+                <p><strong>Participant's Rights:</strong> If you have read this form and have decided to participate in this project, please understand your participation is voluntary and you have the right to withdraw your consent or discontinue participation at any time without penalty or loss of benefits to which you are otherwise entitled. The alternative is not to participate. You have the right to refuse to answer particular questions. The results of this research study may be presented at scientific or professional meetings or published in scientific journals. Your individual privacy will be maintained in all published and written data resulting from the study. In accordance with scientific norms, the data from this study may be used or shared with other researchers for future research (after removing personally identifying information) without additional consent from you.</p>
+                <p><strong>Contact Information:</strong></p>
+                <p><strong>Questions:</strong> If you have any questions, concerns, or complaints about this research, its procedures, risks, and benefits, contact the Protocol Director, Robert Hawkins (rdhawkins@stanford.edu, 217-549-6923).</p>
+                <p><strong>Independent Contact:</strong> If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at 650-723-2480 or toll free at 1-866-680-2906, or email at irbnonmed@stanford.edu. You can also write to the Stanford IRB, Stanford University, 1705 El Camino Real, Palo Alto, CA 94306.</p>
+                <p>Please save or print a copy of this page for your records.</p>
+                <p><strong>If you agree to participate in this research, please click "continue".</strong></p>
+            </div>`
+        ],
+        show_clickable_nav: true
+    };
+
+    // Add final instruction page as a keyboard response trial
+    const finalInstructions = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: function() {
+            let instructions = `<div class="instruction-text">
+              <h2>Great! Let's begin.</h2>
+              <p>Place your left index finger on the Q key and your right index finger on the P key.</p>
+              <p>In the first block, you will:</p>
+              <ul>
+                <li>Press Q for words ending in -in</li>
+                <li>Press P for words ending in -ing</li>
+              </ul>
+            <p>Try to respond as quickly and accurately as possible.</p>
+            <p>Press any key to begin.</p>
+            </div>`
+            return instructions;
+        },
+        choices: 'ALL_KEYS',
+        data: { task: 'final_instructions' }
+    };
+
+    // Block definitions
+    const VariableBlock = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: jsPsych.timelineVariable('stimulus'),
+        choices: ['q', 'p'],
+        data: {
+            task: 'variable',
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            correctResponse: jsPsych.timelineVariable('correctResponse')
+        },
+        stimulus_duration: null,
+        trial_duration: null,
+        response_ends_trial: true,
+        on_finish: function(data) {
+            data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+            data.rt = data.rt || -1;
+        },
+        post_trial_gap: 200,
+        prompt: function() {
+            const isReversed = jsPsych.timelineVariable('isReversed', false);
+            return `<div class="category-label left-label">${isReversed ? '-ing' : '-in'}</div><div class="category-label right-label">${isReversed ? '-in' : '-ing'}</div>`;
+        }
+    };
+
+    const FeedbackBlock = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: function() {
+            const lastTrial = jsPsych.data.get().last(1).values()[0];
+            return lastTrial.correct ? '' : '<div class="feedback incorrect">Incorrect</div>';
+        },
+        choices: 'NO_KEYS',
+        trial_duration: function() {
+            const lastTrial = jsPsych.data.get().last(1).values()[0];
+            return lastTrial.correct ? 0 : 500;
+        },
+        data: { task: 'feedback' }
+    };
+
+    const ValenceBlock = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: jsPsych.timelineVariable('stimulus'),
+        choices: ['q', 'p'],
+        data: {
+            task: 'valence',
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            correctResponse: jsPsych.timelineVariable('correctResponse')
+        },
+        stimulus_duration: null,
+        trial_duration: null,
+        response_ends_trial: true,
+        on_finish: function(data) {
+            data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+            data.rt = data.rt || -1;
+        },
+        post_trial_gap: 200,
+        prompt: function() {
+            const valence_category = jsPsych.timelineVariable('valence_category');
+            return `<div class="category-label left-label">${valence_category === 'states' ? 'Southern' : valence_category === 'professions' ? 'Blue-collar' : 'Country Singers'}</div><div class="category-label right-label">${valence_category === 'states' ? 'Northern' : valence_category === 'professions' ? 'White-collar' : 'News Anchors'}</div>`;
+        }
+    };
+
+    const CombinedBlock = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: jsPsych.timelineVariable('stimulus'),
+        choices: ['q', 'p'],
+        data: {
+            task: 'combined',
+            stimulus: jsPsych.timelineVariable('stimulus'),
+            correctResponse: jsPsych.timelineVariable('correctResponse'),
+            alignment: jsPsych.timelineVariable('alignment')
+        },
+        stimulus_duration: null,
+        trial_duration: null,
+        response_ends_trial: true,
+        on_finish: function(data) {
+            data.correct = jsPsych.pluginAPI.compareKeys(data.response, data.correctResponse);
+            data.rt = data.rt || -1;
+        },
+        post_trial_gap: 200,
+        prompt: function() {
+            const valence_category = jsPsych.timelineVariable('valence_category');
+            const alignment = jsPsych.timelineVariable('alignment');
+            const leftVar = alignment === 'congruent' ? '-in' : '-ing';
+            const rightVar = alignment === 'congruent' ? '-ing' : '-in';
+            return `<div class="category-label left-label">${leftVar} or ${valence_category === 'states' ? 'Southern' : valence_category === 'professions' ? 'Blue-collar' : 'Country Singers'}</div><div class="category-label right-label">${rightVar} or ${valence_category === 'states' ? 'Northern' : valence_category === 'professions' ? 'White-collar' : 'News Anchors'}</div>`;
+        }
+    };
+
+    // Break trial definition
+    const BreakTrial = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: function() {
+            const lastTrial = jsPsych.data.get().last(1).values()[0];
+            const nextBlock = jsPsych.timelineVariable('nextBlock');
+            const isTestBlock = jsPsych.timelineVariable('isTestBlock', false);
+            
+            let instructions = '<div class="instruction-text">';
+            instructions += '<p>Take a short break.</p>';
+            instructions += '<p>In the next block:</p>';
+            
+            if (nextBlock === 'variable') {
+                instructions += '<p>Press Q for words ending in -in</p>';
+                instructions += '<p>Press P for words ending in -ing</p>';
+            } else if (nextBlock === 'variable_reversed') {
+                instructions += '<p><strong>Important: We are switching the mapping!</strong></p>';
+                instructions += '<p>Now:</p>';
+                instructions += '<p>Press Q for words ending in -ing</p>';
+                instructions += '<p>Press P for words ending in -in</p>';
+                instructions += '<p>Please take a moment to remember this new mapping before continuing.</p>';
+            } else if (nextBlock === 'valence') {
+                if (givenTask === 'states') {
+                    instructions += '<p>Press Q for Southern states</p>';
+                    instructions += '<p>Press P for Northern states</p>';
+                } else if (givenTask === 'professions') {
+                    instructions += '<p>Press Q for Blue-collar professions</p>';
+                    instructions += '<p>Press P for White-collar professions</p>';
+                } else {
+                    instructions += '<p>Press Q for Country Singers</p>';
+                    instructions += '<p>Press P for News Anchors</p>';
+                }
+            } else if (nextBlock === 'combined') {
+                instructions += '<p>You will need to categorize both types of items at once:</p>';
+                const alignment = jsPsych.timelineVariable('alignment');
+                const leftVar = alignment === 'congruent' ? '-in' : '-ing';
+                const rightVar = alignment === 'congruent' ? '-ing' : '-in';
+                
+                instructions += `<p>Press Q for ${leftVar} or `;
+                if (givenTask === 'states') {
+                    instructions += 'Southern states</p>';
+                    instructions += `<p>Press P for ${rightVar} or Northern states</p>`;
+                } else if (givenTask === 'professions') {
+                    instructions += 'Blue-collar professions</p>';
+                    instructions += `<p>Press P for ${rightVar} or White-collar professions</p>`;
+                } else {
+                    instructions += 'Country Singers</p>';
+                    instructions += `<p>Press P for ${rightVar} or News Anchors</p>`;
+                }
+                
+                if (isTestBlock) {
+                    instructions += '<p><strong>This is the test block!</strong></p>';
+                    instructions += '<p>You will now complete the same task as before, but with more trials.</p>';
+                } else {
+                    instructions += '<p><strong>This is a practice block.</strong></p>';
+                    instructions += '<p>Take your time to understand the categories before continuing.</p>';
+                }
+            }
+            
+            instructions += '<p>Press any key to continue.</p></div>';
+            return instructions;
+        },
+        choices: 'ALL_KEYS',
+        data: { task: 'break' }
+    };
+
+    // Block definitions with simplified structure
+    const createBlock = (type, stimuli, options = {}) => {
+        const block = {
+            timeline: [type, FeedbackBlock],
+            timeline_variables: jsPsych.randomization.repeat(stimuli, 
+                CONFIG.trialsPerBlock[options.blockType || 'single'] / stimuli.length)
+        };
+
+        // Add break trial if nextBlock is specified
+        if (options.nextBlock) {
+            return [
+                block,
+                {
+                    timeline: [BreakTrial],
+                    timeline_variables: [{
+                        nextBlock: options.nextBlock,
+                        alignment: options.alignment,
+                        isTestBlock: options.isTestBlock
+                    }]
+                }
+            ];
+        }
+
+        return block;
+    };
+
+    // Prepare stimuli
+    const prepareStimuli = () => {
+        const allStimuli = [
+            ...STIMULI.variable,
+            ...Object.values(STIMULI[givenTask]).flat()
+        ];
+
+        return {
+            variable: STIMULI.variable.map(s => ({
+                stimulus: createStimulusHTML(s),
+                correctResponse: s.endsWith('in') ? 'q' : 'p',
+                isReversed: false
+            })),
+            valence: allStimuli.filter(s => !STIMULI.variable.includes(s)).map(s => ({
+                stimulus: createStimulusHTML(s),
+                correctResponse: getCorrectResponse(s, givenTask),
+                valence_category: givenTask
+            })),
+            combined: allStimuli.map(s => ({
+                stimulus: createStimulusHTML(s),
+                correctResponse: getCorrectResponse(s, givenTask, congruent_first ? 'congruent' : 'incongruent'),
+                alignment: congruent_first ? 'congruent' : 'incongruent',
+                valence_category: givenTask
+            }))
+        };
+    };
+
+    const stimuli = prepareStimuli();
+
+    /**
+     * Construct the experiment timeline
+     * The experiment follows this structure:
+     * 1. Initial variable block (categorizing -in/-ing words)
+     * 2. Valence block (categorizing social categories)
+     * 3. First combined block sequence:
+     *    a. Practice block (20 trials)
+     *    b. Test block (40 trials)
+     * 4. Reversed variable block (switched -in/-ing mapping)
+     * 5. Second combined block sequence:
+     *    a. Practice block (20 trials)
+     *    b. Test block (40 trials)
+     * 
+     * The order of congruent/incongruent conditions is randomized
+     */
+    const timeline = [
+        // Initial instructions
+        instructions,
+        finalInstructions,
+
+        // Block 1: Initial variable categorization
+        ...createBlock(VariableBlock, stimuli.variable, { 
+            blockType: 'single',
+            nextBlock: 'valence',
+            isTestBlock: false
+        }),
+
+        // Block 2: Valence categorization
+        ...createBlock(ValenceBlock, stimuli.valence, { 
+            blockType: 'single',
+            nextBlock: 'combined',
+            alignment: congruent_first ? 'congruent' : 'incongruent',
+            isTestBlock: false
+        }),
+
+        // Block 3: First combined sequence (congruent or incongruent)
+        // Practice block
+        ...createBlock(CombinedBlock, stimuli.combined, { 
+            blockType: 'single',
+            nextBlock: 'combined',
+            alignment: congruent_first ? 'congruent' : 'incongruent',
+            isTestBlock: true
+        }),
+        // Test block
+        ...createBlock(CombinedBlock, stimuli.combined, { 
+            blockType: 'combined',
+            nextBlock: 'variable_reversed',
+            isTestBlock: false
+        }),
+
+        // Block 4: Reversed variable categorization
+        ...createBlock(VariableBlock, stimuli.variable.map(s => ({
+            ...s,
+            correctResponse: s.correctResponse === 'q' ? 'p' : 'q',
+            isReversed: true
+        })), { 
+            blockType: 'single',
+            nextBlock: 'combined',
+            alignment: congruent_first ? 'incongruent' : 'congruent',
+            isTestBlock: false
+        }),
+
+        // Block 5: Second combined sequence (incongruent or congruent)
+        // Practice block
+        ...createBlock(CombinedBlock, stimuli.combined.map(s => ({
+            ...s,
+            alignment: congruent_first ? 'incongruent' : 'congruent',
+            correctResponse: s.correctResponse === 'q' ? 'p' : 'q'
+        })), { 
+            blockType: 'single',
+            nextBlock: 'combined',
+            alignment: congruent_first ? 'incongruent' : 'congruent',
+            isTestBlock: true
+        }),
+        // Test block
+        ...createBlock(CombinedBlock, stimuli.combined.map(s => ({
+            ...s,
+            alignment: congruent_first ? 'incongruent' : 'congruent',
+            correctResponse: s.correctResponse === 'q' ? 'p' : 'q'
+        })), { 
+            blockType: 'combined',
+            nextBlock: 'end',
+            isTestBlock: false
+        }),
+
+        // Save data
+        {
+            type: jsPsychPipe,
+            action: "save",
+            experiment_id: "YSpycOqy1gs2",
+            filename: filename,
+            data_string: () => jsPsych.data.get().csv()
+        }
+    ];
+
+    // Run experiment
+    jsPsych.run(timeline);
+</script>
+</html>
