@@ -68,7 +68,28 @@
 </head>
 <body></body>
 <script>
-    // Configuration and Constants
+
+    // Initialize jsPsych
+    const jsPsych = initJsPsych({
+        on_finish: function() {
+            // Calculate and display IAT D-scores
+            // const d_scores = calculateIATDScores();
+            // jsPsych.data.addProperties({ d_scores: d_scores });
+            jsPsych.data.displayData();
+        }
+    });
+
+    // DataPipe setup
+    const subject_id = jsPsych.randomization.randomID(10);
+    const filename = `${subject_id}.csv`;
+
+    // Randomize experiment parameters
+    const congruent_first = jsPsych.randomization.shuffle([true, false])[0];
+    const givenTask = jsPsych.randomization.sampleWithoutReplacement(['states', 'professions', 'singers_anchors'], 1)[0];
+
+    console.log('running with congruent_first = ', congruent_first, 'and givenTask = ', givenTask);
+
+// Configuration and Constants
     const CONFIG = {
         trialsPerBlock: {
             single: 20,
@@ -82,6 +103,12 @@
             instruction: '20px',
             feedback: '32px'
         }
+    };
+
+    // Calculate alignments once
+    const ALIGNMENTS = {
+        first: congruent_first ? 'congruent' : 'incongruent',
+        second: congruent_first ? 'incongruent' : 'congruent'
     };
 
     // Stimuli Configuration
@@ -104,9 +131,10 @@
     // Helper Functions
     const createStimulusHTML = (text) => `<div class="sentence">${text}</div>`;
 
-    const getCorrectResponse = (stimulus, category, alignment = 'congruent') => {
+    const getCorrectResponse = (stimulus, category, alignment = 'congruent', isReversed = false) => {
         if (STIMULI.variable.includes(stimulus)) {
-            return stimulus.endsWith('in') ? 'q' : 'p';
+            const isIn = stimulus.endsWith('in');
+            return isReversed ? (isIn ? 'p' : 'q') : (isIn ? 'q' : 'p');
         }
 
         const isSouthern = STIMULI.states.southern.includes(stimulus);
@@ -143,25 +171,7 @@
         };
     };
 
-    // Initialize jsPsych
-    const jsPsych = initJsPsych({
-        on_finish: function() {
-            // Calculate and display IAT D-scores
-            // const d_scores = calculateIATDScores();
-            // jsPsych.data.addProperties({ d_scores: d_scores });
-            jsPsych.data.displayData();
-        }
-    });
 
-    // DataPipe setup
-    const subject_id = jsPsych.randomization.randomID(10);
-    const filename = `${subject_id}.csv`;
-
-    // Randomize experiment parameters
-    const congruent_first = jsPsych.randomization.shuffle([true, false])[0];
-    const givenTask = jsPsych.randomization.sampleWithoutReplacement(['states', 'professions', 'singers_anchors'], 1)[0];
-
-    console.log('running with congruent_first = ', congruent_first, 'and givenTask = ', givenTask);
 
     // Instructions
     const instructions = {
@@ -171,6 +181,21 @@
                 <h1>Welcome to the Experiment!</h1>
                 <p>In this task, you will categorize words and social categories.</p>
                 <p>You will sort words ending in -IN or -ING and various social categories (states, professions, or people).</p>
+            </div>`,
+            `<div class="instruction-text">
+                <p>For each item:</p>
+                <ul>
+                    <li>Press 'Q' for items in the left category</li>
+                    <li>Press 'P' for items in the right category</li>
+                </ul>
+                <p>Category labels will appear in the upper corners of the screen.</p>
+                <p>Try to respond as quickly and accurately as possible.</p>
+            </div>`,
+            `<div class="instruction-text">
+                <p>You will receive feedback if you make an error.</p>
+                <p>You can take short breaks between blocks.</p>
+                <p>You will now be directed to a consent form.</p>
+                <p>Please read through and select continue if you agree</p>
             </div>`,
             `<div class="instruction-text" style="font-size: 0.9em;">
                 <h2>Research Study Information</h2>
@@ -187,19 +212,6 @@
                 <p><strong>Independent Contact:</strong> If you are not satisfied with how this study is being conducted, or if you have any concerns, complaints, or general questions about the research or your rights as a participant, please contact the Stanford Institutional Review Board (IRB) to speak to someone independent of the research team at 650-723-2480 or toll free at 1-866-680-2906, or email at irbnonmed@stanford.edu. You can also write to the Stanford IRB, Stanford University, 1705 El Camino Real, Palo Alto, CA 94306.</p>
                 <p>Please save or print a copy of this page for your records.</p>
                 <p><strong>If you agree to participate in this research, please click "continue".</strong></p>
-            </div>`,
-            `<div class="instruction-text">
-                <p>For each item:</p>
-                <ul>
-                    <li>Press 'Q' for items in the left category</li>
-                    <li>Press 'P' for items in the right category</li>
-                </ul>
-                <p>Category labels will appear in the upper corners of the screen.</p>
-                <p>Try to respond as quickly and accurately as possible.</p>
-            </div>`,
-            `<div class="instruction-text">
-                <p>You will receive feedback if you make an error.</p>
-                <p>You can take short breaks between blocks.</p>
             </div>`
         ],
         show_clickable_nav: true
@@ -320,7 +332,7 @@
         stimulus: function() {
             const lastTrial = jsPsych.data.get().last(1).values()[0];
             const nextBlock = jsPsych.timelineVariable('nextBlock');
-            const isTestBlock = jsPsych.timelineVariable('isTestBlock', false);
+            const blockType = jsPsych.timelineVariable('blockType', 'single');
             
             let instructions = '<div class="instruction-text">';
             instructions += '<p>Take a short break.</p>';
@@ -364,12 +376,13 @@
                     instructions += `<p>Press P for ${rightVar} or News Anchors</p>`;
                 }
                 
-                if (isTestBlock) {
-                    instructions += '<p><strong>This is the test block!</strong></p>';
-                    instructions += '<p>You will now complete the same task as before, but with more trials.</p>';
-                } else {
+                // Only show practice/test text for combined blocks
+                if (blockType === 'single') {
                     instructions += '<p><strong>This is a practice block.</strong></p>';
                     instructions += '<p>Take your time to understand the categories before continuing.</p>';
+                } else {
+                    instructions += '<p><strong>This is the test block!</strong></p>';
+                    instructions += '<p>You will now complete the same task as before, but with more trials.</p>';
                 }
             }
             
@@ -380,33 +393,96 @@
         data: { task: 'break' }
     };
 
-    // Block definitions with simplified structure
-    const createBlock = (type, stimuli, options = {}) => {
-        const block = {
-            timeline: [type, FeedbackBlock],
+    // Block creation functions
+    const createVariableBlock = (stimuli, options = {}) => {
+        return {
+            timeline: [VariableBlock, FeedbackBlock],
             timeline_variables: jsPsych.randomization.repeat(stimuli, 
                 CONFIG.trialsPerBlock[options.blockType || 'single'] / stimuli.length)
         };
-
-        // Add break trial if nextBlock is specified
-        if (options.nextBlock) {
-            return [
-                block,
-                {
-                    timeline: [BreakTrial],
-                    timeline_variables: [{
-                        nextBlock: options.nextBlock,
-                        alignment: options.alignment,
-                        isTestBlock: options.isTestBlock
-                    }]
-                }
-            ];
-        }
-
-        return block;
     };
 
-    // Prepare stimuli
+    const createValenceBlock = (stimuli, options = {}) => {
+        return {
+            timeline: [ValenceBlock, FeedbackBlock],
+            timeline_variables: jsPsych.randomization.repeat(stimuli, 
+                CONFIG.trialsPerBlock[options.blockType || 'single'] / stimuli.length)
+        };
+    };
+
+    const createCombinedBlock = (stimuli, options = {}) => {
+        return {
+            timeline: [CombinedBlock, FeedbackBlock],
+            timeline_variables: jsPsych.randomization.repeat(stimuli, 
+                CONFIG.trialsPerBlock[options.blockType || 'single'] / stimuli.length)
+        };
+    };
+
+    // Break trial creation
+    const createBreakTrial = (options) => {
+        return {
+            timeline: [BreakTrial],
+            timeline_variables: [{
+                nextBlock: options.nextBlock,
+                alignment: options.alignment,
+                blockType: options.blockType
+            }]
+        };
+    };
+
+    /**
+     * Determines the correct response for a given stimulus based on its type and the current alignment.
+     * 
+     * Mapping Rules:
+     * 1. For variable words (-in/-ing):
+     *    - Congruent condition: -in -> q, -ing -> p
+     *    - Incongruent condition: -in -> p, -ing -> q
+     * 
+     * 2. For valence words (states/professions/singers):
+     *    - ALWAYS: southern/blueCollar/country -> q, others -> p
+     *    - This mapping stays consistent regardless of congruent/incongruent condition
+     * 
+     * Example mappings in different blocks:
+     * - First combined block (incongruent if congruent_first=false):
+     *   * -in words -> p, -ing words -> q
+     *   * southern states -> q, northern states -> p
+     * 
+     * - Second combined block (congruent if congruent_first=false):
+     *   * -in words -> q, -ing words -> p
+     *   * southern states -> q, northern states -> p
+     */
+    const getCombinedResponse = (stimulus, alignment) => {
+        if (STIMULI.variable.includes(stimulus)) {
+            // For variable words, use -in/-ing mapping based on alignment
+            const isIn = stimulus.endsWith('in');
+            return alignment === 'congruent' ? (isIn ? 'q' : 'p') : (isIn ? 'p' : 'q');
+        } else {
+            // For valence words, determine which category it belongs to
+            const isSouthern = STIMULI.states.southern.includes(stimulus);
+            const isBlueCollar = STIMULI.professions.blueCollar.includes(stimulus);
+            const isCountry = STIMULI.singers_anchors.country.includes(stimulus);
+            
+            // Valence mapping stays the same regardless of alignment:
+            // southern/blueCollar/country -> Q, others -> P
+            const isLeftCategory = isSouthern || isBlueCollar || isCountry;
+            return isLeftCategory ? 'q' : 'p';
+        }
+    };
+
+    /**
+     * Creates stimuli for different blocks with appropriate mappings.
+     * 
+     * Block Structure:
+     * 1. First combined sequence:
+     *    - Practice block (20 trials)
+     *    - Test block (40 trials)
+     *    - Uses 'congruent' or 'incongruent' alignment based on congruent_first
+     * 
+     * 2. Second combined sequence:
+     *    - Practice block (20 trials)
+     *    - Test block (40 trials)
+     *    - Uses opposite alignment of first sequence
+     */
     const prepareStimuli = () => {
         const allStimuli = [
             ...STIMULI.variable,
@@ -426,8 +502,14 @@
             })),
             combined: allStimuli.map(s => ({
                 stimulus: createStimulusHTML(s),
-                correctResponse: getCorrectResponse(s, givenTask, congruent_first ? 'congruent' : 'incongruent'),
-                alignment: congruent_first ? 'congruent' : 'incongruent',
+                correctResponse: getCombinedResponse(s, ALIGNMENTS.first),
+                alignment: ALIGNMENTS.first,
+                valence_category: givenTask
+            })),
+            combinedReversed: allStimuli.map(s => ({
+                stimulus: createStimulusHTML(s),
+                correctResponse: getCombinedResponse(s, ALIGNMENTS.second),
+                alignment: ALIGNMENTS.second,
                 valence_category: givenTask
             }))
         };
@@ -456,91 +538,81 @@
         finalInstructions,
 
         // Block 1: Initial variable categorization
-        // ...createBlock(VariableBlock, stimuli.variable, { 
-        //     blockType: 'single',
-        //     nextBlock: 'valence',
-        //     isTestBlock: false
-        // }),
+        createVariableBlock(stimuli.variable, { 
+            blockType: 'single'
+        }),
 
-        // // Block 2: Valence categorization
-        // ...createBlock(ValenceBlock, stimuli.valence, { 
-        //     blockType: 'single',
-        //     nextBlock: 'combined',
-        //     alignment: congruent_first ? 'congruent' : 'incongruent',
-        //     isTestBlock: false
-        // }),
+        // Block 2: Valence categorization
+        createValenceBlock(stimuli.valence, { 
+            blockType: 'single'
+        }),
 
-        // // Block 3: First combined sequence (congruent or incongruent)
-        // // Practice block
-        // ...createBlock(CombinedBlock, stimuli.combined, { 
-        //     blockType: 'single',
-        //     nextBlock: 'combined',
-        //     alignment: congruent_first ? 'congruent' : 'incongruent',
-        //     isTestBlock: true
-        // }),
-        // // Test block
-        // ...createBlock(CombinedBlock, stimuli.combined, { 
-        //     blockType: 'combined',
-        //     nextBlock: 'variable_reversed',
-        //     isTestBlock: false
-        // }),
-
-        // // Block 4: Reversed variable categorization
-        // ...createBlock(VariableBlock, stimuli.variable.map(s => ({
-        //     ...s,
-        //     correctResponse: s.correctResponse === 'q' ? 'p' : 'q',
-        //     isReversed: true
-        // })), { 
-        //     blockType: 'single',
-        //     nextBlock: 'combined',
-        //     alignment: congruent_first ? 'incongruent' : 'congruent',
-        //     isTestBlock: false
-        // }),
-
-        // Block 5: Second combined sequence (incongruent or congruent)
+        // Block 3: First combined sequence
         // Practice block
-        ...createBlock(CombinedBlock, stimuli.combined.map(s => ({
-            ...s,
-            alignment: congruent_first ? 'incongruent' : 'congruent',
-            correctResponse: STIMULI.variable.includes(s.stimulus.replace(/<[^>]*>/g, '')) ?
-                (s.stimulus.includes('in</div>') ? 'p' : 'q') :
-                s.correctResponse
-        })), { 
-            blockType: 'single',
+        createBreakTrial({ 
             nextBlock: 'combined',
-            alignment: congruent_first ? 'incongruent' : 'congruent',
-            isTestBlock: true
+            alignment: ALIGNMENTS.first,
+            blockType: 'single'
+        }),
+        createCombinedBlock(stimuli.combined, { 
+            blockType: 'single',
+            alignment: ALIGNMENTS.first
+        }),
+        
+        // Test block
+        createBreakTrial({ 
+            nextBlock: 'combined',
+            alignment: ALIGNMENTS.first,
+            blockType: 'combined'
+        }),
+        createCombinedBlock(stimuli.combined, { 
+            blockType: 'combined',
+            alignment: ALIGNMENTS.first
+        }),
+
+        // Block 4: Reversed variable categorization
+        createBreakTrial({ 
+            nextBlock: 'variable_reversed',
+            alignment: ALIGNMENTS.first,
+            blockType: 'combined'
+        }),
+        createVariableBlock(STIMULI.variable.map(word => ({
+            stimulus: createStimulusHTML(word),
+            correctResponse: getCorrectResponse(word, null, 'congruent', true),
+            isReversed: true
+        })), { 
+            blockType: 'single'
+        }),
+
+        // Block 5: Second combined sequence
+        // Practice block
+        createBreakTrial({ 
+            nextBlock: 'combined',
+            alignment: ALIGNMENTS.second,
+            blockType: 'single'
+        }),
+        createCombinedBlock(stimuli.combinedReversed, { 
+            blockType: 'single',
+            alignment: ALIGNMENTS.second
         }),
         // Test block
-        ...createBlock(CombinedBlock, stimuli.combined.map(s => ({
-            ...s,
-            alignment: congruent_first ? 'incongruent' : 'congruent',
-            correctResponse: STIMULI.variable.includes(s.stimulus.replace(/<[^>]*>/g, '')) ?
-                (s.stimulus.includes('in</div>') ? 'p' : 'q') :
-                s.correctResponse
-        })), { 
+        createBreakTrial({ 
+            nextBlock: 'combined',
+            alignment: ALIGNMENTS.second,
+            blockType: 'combined'
+        }),
+        createCombinedBlock(stimuli.combinedReversed, { 
             blockType: 'combined',
-            nextBlock: 'end',
-            isTestBlock: false
+            alignment: ALIGNMENTS.second
         }),
 
         // Save data
-        //{
-            //type: jsPsychPipe,
-            //action: "save",
-            //experiment_id: "YSpycOqy1gs2",
-            //filename: filename,
-            //data_string: () => jsPsych.data.get().csv()
-        //}
-
-
-        //Save_data 
         {
             type: jsPsychPipe,
             action: "save",
-            experiment_id: "NQobmGiQXdQT",
+            experiment_id: "YSpycOqy1gs2",
             filename: filename,
-            data_string: ()=>jsPsych.data.get().csv()
+            data_string: () => jsPsych.data.get().csv()
         }
     ];
 
