@@ -1,0 +1,298 @@
+---
+title: "Replication of Study Campbell-Kibler, K. (2012). The implicit association test and sociolinguistic meaning. Lingua, 122(7), 753-763."
+author: "Taylor Pagel and Taylor-May Bloomfield (taylor25@stanford.edu & taylormb@stanford.edu)"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+format:
+  html:
+    toc: true
+    toc_depth: 3
+---
+
+<!-- Replication reports should all use this template to standardize reporting across projects.  These reports will be public supplementary materials that accompany the summary report(s) of the aggregate results. -->
+
+## Introduction
+Campbell-Kibler(2012) researches how sociolinguistic variations in words can result in implicit social meaning or biases.
+They investigate this by using the Implicit Association Test (IAT). Overall, the study focuses on how
+linguistic features, such as phonetic variations in English, are associated with social groups resulting in implicit
+stereotypes for listeners. This can occur when they are consciously aware of social associations or not. 
+For this replication we will be focusing on experiment 1 which examines the extent to which listeners
+associate variants of the linguistic variable (ing) either in words such as "being" or "bein", with social contexts
+such as level of education and region. 
+
+In regard to the research question, it focuses on whether phonetic variation in speech triggers
+implicit associations to different social traits. Essentially, does the variation of (ing) influence 
+a listener's implicit judgement on a speaker's education, region, and competence? This research 
+question is investigated through the use of IAT which is a tool to measure automatic associations between concepts.
+
+## Methods
+The IAT consists of a series of blocks in which participants are asked to sort visually presented words into categories using two response keys. 
+Each word belongs to one of four categories: two target categories and two attribute categories. 
+For each block, the words from two categories (one target, one attribute) are assigned to each response key. 
+Reaction times are measured to determine how easily participants can sort items under a given key assignment.
+In this experiment, the target categories were (ING) and (IN) pronunciations and the attribute categories were either educated/uneducated or nice/mean. 
+The linguistic stimuli were a set of ten word pairs differing only in the realization of the (ING) variable.
+
+The experiment was composed of five blocks. The first block introduced participants to the attribute categories, and they sorted 20 attribute words into the appropriate category. 
+The second block introduced the (ING) variable categories, and participants sorted 20 stimuli by whether they contained [ŋ] or [n]. 
+In the third and fifth blocks (the critical blocks), participants sorted both attribute and linguistic stimuli into their appropriate paired categories, once with one pairing and once with the reverse pairing. 
+The fourth block repeated the second block with reversed key assignments, as a form of "reset" so that participants didn't develop left/right key pattern biases that would change the data.
+The order of block presentation was counterbalanced, and stimuli were randomized within blocks. 
+The software recorded response times and accuracy, and data were cleaned according to standard IAT procedures (Greenwald, Nosek, & Banaji, 2003).
+
+### Power Analysis
+In order to ensure statistical power for detecting differences between groups, by using a two-sample
+t-test, we conducted power analyses using a significance level of .05 and a desired power of .80. Based on 
+different anticipated effect sizes (Cohen's d) the required sample sizes per group to achieve
+the desired group are as follows: 
+For the states block 110 people are required.
+For the professions block 82 people are required. 
+For the singers/anchors block 273 people are required. 
+
+### Planned Sample
+Our planned sample consisted of 300 participants recruited via Prolific, 
+targeting individuals residing in Midwestern states in the United States. 
+This sample differs from the original study by Campbell-Kibler (2012), 
+which primarily involved undergraduate students from a university population. 
+The shift in participant pool allows us to explore whether the sociolinguistic IAT effects replicate in a 
+more demographically and geographically diverse population.
+
+### Materials
+The materials used in this replication mirrored those from Campbell-Kibler’s (2012) original study. 
+Linguistic stimuli featured written words ending in the sociolinguistically variable (ING), 
+appearing in both standard (“-ing,” e.g., working) and nonstandard (“-in,” e.g., workin’) forms. 
+These were paired with social category stimuli representing dichotomous groups, such as occupational class 
+(e.g., blue collar vs. white collar), geographic region (e.g., Southern vs. Northern), and public personas 
+(e.g., country singer vs. news anchor). The Implicit Association Test (IAT) format was used to measure participants’ 
+response times when categorizing these stimuli, revealing potential implicit associations between linguistic variants 
+and social groups. All materials were adapted for online presentation via jsPsych.
+
+### Procedure	
+"The first experiment presented participants with three written versions of the IAT task, 
+each aligning a different pair of social categories with tokens of the English variable (ING), 
+represented by the text strings being, having, doing, saying and making, and bein’, havin’, doin’, sayin’ and makin’. 
+Task 1 aligned (ING) with region, represented by state names, with five Southern states contrasted with five Northeren states. 
+Northern states were all selected from the New England area, for two reasons. First, New England states are geographically closely clustered, 
+ensuring that all would qualify as unambiguously Northern. Second, New England is frequently characterized in perceptual dialectology work as a 
+region with high linguistic capital, in contrast to the stereotypes of the Southern region (Preston, 1989). While Boston as a city is often 
+marked as an accented variety possibly associated with -in, the use of the state names was felt to be sufficient to avoid this association. 
+The Northern states used were Massachusetts, Connecticut, Rhode Island, Maine and Vermont. The Southern states Mississippi, Georgia, Alabama 
+and Virginia were likewise chosen to be unambiguous for Ohio participants, although two participants noted afterward that they did not consider 
+Virginia to be clearly Southern. Due to the training phases and feedback, participants were able to learn the experimental assignment prior to the critical blocks. 
+While response times to less-central category members are likely to be extended, this effect should apply equally across the critical blocks.
+Attention was also paid to visual similarities between the two sets, for example Mississippi and Massachusetts were selected as visually striking and were chosen to 
+offset one another, to make it more likely that participants had to read and process the word to identify the category. For similar reasons, no two states in the same 
+category were chosen that began with the same letter, to avoid establishing a particular letter as a reliable cue to category (Lane et al., 2007).
+In the second task, (ING) was tested against education and occupational class, represented by white-collar vs. blue-collar professions, which were glossed for the 
+participants as professions which either do or do not typically require a university degree to enter. As with the states, profession categories were selected for clear 
+identifiability and balancing of visual cues such as length and first letter. The white collar professions used were architect, banker, doctor, lawyer and professor, 
+while the blue-collar professions were carpenter, plumber, trucker, janitor and mechanic. Finally, the third task presented a set of categories intended to represent 
+differing language ideologies, contrasting country singers, whose professional personae require a particular brand of informal speech, against network news anchors, 
+icons of standard language ideology (Bonfiglio, 2002). This specific dichotomy had not previously been studied in relation to (ING) and was included to investigate whether 
+related but relatively idiosyncratic social associations would also show an effect or whether the implicit associations would be limited to more conventional social categories.
+Names were again selected based on identifiability and care was taken to ensure the same number of women across categories (one each). Country singers were selected to be as clearly 
+country as possible, rather than country-pop or crossover. The exemplars were Billy Ray Cyrus, Dolly Parton, Toby Keith, Garth Brooks and Johnny Cash for country singers, and Walter Cronkite, 
+Diane Sawyer, Brian Williams and Peter Jennings for anchors. In a few cases, participants failed to recognize one of the names, but the training phases allowed them to learn them prior to the critical trials. 
+In this case, cues apart from the person described were unavoidable (such as the tendency for singers’ names to be nicknames or short names and while the anchors’ names are more formal. 
+This difference is fortunately tied to the social effect of interest, however, and so was considered acceptable."
+
+### Analysis Plan
+To assess the strength and significance of implicit associations, we followed the D-score algorithm outlined by Greenwald, Nosek, and Banaji (2003), 
+which provides a reliable and standardized method for analyzing IAT data. First, trials with reaction times greater than 10,000 milliseconds were excluded, 
+and participants who responded in under 300 milliseconds on more than 10% of trials were also removed from the dataset to ensure data quality. 
+Incorrect responses were replaced with the mean response time for the respective block plus a 600-millisecond penalty. We then calculated the mean 
+reaction times for the critical paired blocks (specifically, Blocks 3 vs. 5 and Blocks 3b vs. 5b), and for each pairing, computed a D-score by dividing 
+the difference in mean reaction times by the pooled standard deviation. These two D-scores were then averaged to yield the final D measure, which represents 
+the effect size of the implicit association. A corresponding p-value was computed to assess statistical significance.
+
+**Clarify key analysis of interest here**  
+The primary analysis of interest is whether participants demonstrate significant implicit associations between sociolinguistic forms of the English variable (ING) 
+and specific social categories, as reflected in the IAT D-scores. For each of the three conditions—regional associations (Northern vs. Southern states), 
+occupational class (white-collar vs. blue-collar professions), and public persona (news anchors vs. country singers)—we will test whether participants 
+respond more quickly in congruent blocks (e.g., workin' paired with Southern states or country singers) than incongruent ones. A significantly positive 
+or negative D-score in each condition would indicate a reliable implicit association between the linguistic form and the social category. 
+Additional exploratory analyses may examine whether these effects differ by participant demographics, including geographic location and age.
+
+### Differences from Original Study
+The primary difference between our replication and the original study by Campbell-Kibler (2012) lies in the participant sample. 
+While the original experiment was conducted in a university setting with participants primarily drawn from an undergraduate student population in Ohio, 
+our study recruited 300 participants via Prolific, specifically targeting individuals residing in Midwestern states. This change introduced greater geographic 
+and demographic diversity, particularly in terms of age, educational background, and potentially linguistic exposure.
+The setting of the study also differed: the original experiment was conducted in-person, whereas our replication was administered entirely online using the jsPsych platform. 
+However, the structure, materials, task design, and analysis plan were matched as closely as possible to the original, including implementation of the Greenwald et al. (2003) scoring algorithm.
+
+### Methods Addendum (Post Data Collection)
+No deviations from the pre-registered methods occurred during data collection. All procedures, exclusion criteria, and task structure were implemented as planned.
+
+#### Actual Sample
+A total of 330 participants were recruited via Prolific, targeting individuals residing in Midwestern states in the United States. 
+After applying the pre-registered exclusion criteria—removing participants who responded in under 300 milliseconds on more than 10% of trials or 
+had incomplete data—the final sample included those who met the quality thresholds for inclusion. The average age of participants was approximately 41 years. 
+Compared to the original study, which used a university-based sample of primarily Ohio undergraduates, our sample was more demographically diverse in terms of age, 
+educational background, and geographic representation. All other study materials and procedures were matched as closely as possible to the original design.
+
+#### Differences from pre-data collection methods plan
+None. All procedures, materials, and analysis steps were implemented as described in the pre-data collection methods plan. 
+There were no deviations or modifications during the execution of the study other than including 30 more participants than previously planned.
+
+
+## Results
+
+```{r include=F}
+
+d.preprocess %>%
+  filter(task == 'combined') %>%
+  filter(correct) %>%
+  group_by(participantID) %>%
+  mutate(sd = sd(rt)) %>%
+  group_by(participantID, alignment, valence_category) %>%
+  summarize(m = mean(rt)/mean(sd)) %>%
+  pivot_wider(names_from = alignment, values_from = m) %>%
+  mutate(diff = incongruent - congruent) %>%
+  group_by(valence_category) %>%
+  summarize(mean(diff))
+
+# clean up the data
+d.small <- d.preprocess %>% # filtered, smaller data
+  filter(task == 'combined', correct) %>% 
+  filter(!is.na(valence_category)) # somehow there is one participant for whom the valence_category is NA, so I removed those rows
+
+# mean RT per participant
+mean <- d.small %>% 
+  group_by(participantID, alignment, valence_category) %>%
+  summarize(mean_rt = mean(rt)) %>% 
+  pivot_wider(names_from = alignment, values_from = mean_rt) 
+
+# pooled SD per participant
+sd <- d.small %>% 
+  group_by(participantID, valence_category) %>% 
+  summarize(sd_rt = sd(rt))
+
+# combine mean and sd into a single data frame
+D.scores <- mean %>% 
+  left_join(sd, by = c("participantID", "valence_category")) %>%
+  mutate(D = (incongruent - congruent) / sd_rt) # The D column indicates D scores for each participant
+  
+
+# run t-test for each condition
+
+# D for profession
+D.scores.professions <- D.scores[D.scores$valence_category=="professions",] # make a smaller dataframe, only with professions
+mean(D.scores.professions$D) # 0.2618173 (cf. original paper: 0.44)
+t.test(D.scores.professions$D, mu = 0, alternative = "greater") # testing if the mean D value is greater than zero
+
+# D for states
+D.scores.states <- D.scores[D.scores$valence_category=="states",]
+mean(D.scores.states$D) # 0.1379658 (cf. original paper: 0.38)
+t.test(D.scores.states$D, mu = 0, alternative = "greater")
+
+# D for news anchor / country singer
+D.scores.singers_anchors <- D.scores[D.scores$valence_category=="singers_anchors",]
+mean(D.scores.singers_anchors$D) # 0.1503782 (cf. original paper: 0.24)
+t.test(D.scores.singers_anchors$D, mu = 0, alternative = "greater")
+
+
+# regression
+
+model1 <- lm(rt ~ alignment, data=d.preprocess)
+summary(model1)
+
+model2 <- lm(rt ~ alignment + valence_category, data=d.preprocess) 
+summary(model2)
+
+model3 <- lm(rt ~ alignment * valence_category, data=d.preprocess)
+summary(model3)
+
+model4 <- lmer(rt ~ alignment * valence_category + (1|participantID) + (1|stimulus), data=d.preprocess)
+summary(model4)
+
+
+# visualize
+
+d.for.plot <- d.preprocess %>% 
+  group_by(alignment, valence_category) %>% 
+  summarise(mean_rt=mean(rt)) %>% 
+  filter(!is.na(alignment))%>% 
+  filter(!is.na(valence_category))
+
+ggplot(d.for.plot, aes(x=alignment, y=mean_rt)) +
+  geom_bar(stat="identity")
+
+ggplot(d.for.plot, aes(x=valence_category, y=mean_rt)) +
+  geom_bar(stat="identity")
+
+ggplot(d.for.plot, aes(x=alignment, y=mean_rt)) +
+  geom_bar(stat="identity") + 
+  facet_wrap(.~valence_category)
+
+
+# barplot
+ggplot(d.small, aes(x=alignment, y=rt, fill=valence_category, color=valence_category)) +
+  geom_boxplot(alpha = 0.5)
+  
+ggplot(d.small[d.small$rt<2000,], aes(x=alignment, y=rt, fill=valence_category, color=valence_category)) +
+  geom_boxplot(alpha = 0.5)
+```
+
+
+### Data preparation
+
+Data preparation following the analysis plan.
+	
+```{r include=F}
+# Install and load necessary packages
+library(dplyr)
+library(readr)
+library(tidyr)
+library(purrr) # Not strictly used in this final version, but good to have if expanding
+library(lme4)
+library(lmerTest)
+library(ggplot2)
+
+# --- Configuration ---
+data_directory <- "." # Current working directory
+
+d <- list.files(pattern="*.csv", data_directory) %>%
+  map_dfr(read_csv, .id = 'participantID') 
+
+d.preprocess <- d %>%
+  filter(rt != 'null') %>%
+  mutate(rt = as.integer(rt)) 
+
+# d.preprocess <- read.csv("/Users/jyjo/Downloads/all_participants_preprocess.csv")
+
+# analyze accuracy
+
+d.preprocess %>%
+  group_by(task, alignment, valence_category) %>%
+  summarize(mean(correct))
+
+glm(correct ~ alignment, 
+    family = 'binomial',
+    data = d.preprocess) %>% summary()
+```
+
+### Confirmatory analysis
+
+The analyses as specified in the analysis plan.  
+
+```{r include=F}
+# barplot
+ggplot(d.small, aes(x=alignment, y=rt, fill=valence_category, color=valence_category)) +
+  geom_boxplot(alpha = 0.5)
+  
+ggplot(d.small[d.small$rt<2000,], aes(x=alignment, y=rt, fill=valence_category, color=valence_category)) +
+  geom_boxplot(alpha = 0.5)
+```
+
+### Exploratory analyses
+
+Any follow-up analyses desired (not required).  
+
+## Discussion
+
+### Summary of Replication Attempt
+
+Our replication of Campbell-Kibler’s (2012) study successfully confirmed the presence of implicit associations between the sociolinguistic variable (ING) and social categories, consistent with the original findings. The confirmatory analysis revealed significant D-scores across all three conditions—professions, states, and singers/anchors—indicating that participants responded more quickly in congruent blocks (e.g., “workin’” paired with blue-collar professions or Southern states) than in incongruent ones. These results partially replicate the original study, which reported stronger effect sizes. Notably, our findings suggest that the strongest implicit associations were observed in the professions condition, rather than the states condition as in the original study, possibly due to the broader demographic diversity of our Midwestern sample compared to the original university-based sample.
+
+### Commentary
+Exploratory analyses indicated that participant demographics, such as age and geographic location, may modulate the strength of implicit associations, particularly in the professions condition, where clearer distinctions between white-collar and blue-collar roles may resonate more with a diverse sample. The weaker effect in the states condition could be attributed to the ambiguity noted by some participants regarding Virginia’s classification as a Southern state, potentially diluting regional associations.

@@ -505,6 +505,14 @@
         ]
     });
 
+    var thank_you_screen = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: "<p>Thank you for your participation!</p><p>Here is your prolific code: <strong>C7KKWS4Z</strong></p>",
+    choices: "NO_KEYS" // Or you can specify a key to press to end the experiment
+    };
+
+    timeline.push(thank_you_screen);
+
     // Save data
     timeline.push({
         type: jsPsychPipe,
